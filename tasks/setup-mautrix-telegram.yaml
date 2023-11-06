@@ -72,47 +72,11 @@
     mode: "0600"  # contains passwords
   become: true
 
-- name: "Check if mautrix-telegram-registration.yaml already exists"
-  ansible.builtin.stat:
-    path: /etc/matrix-synapse/mautrix-telegram-registration.yaml
-  register: appservice_registration_stat
-
-- name: "Create appservice registration"
-  when:
-    - not appservice_registration_stat.stat.exists
-  ansible.builtin.command: |
-    /opt/mautrix-telegram/venv/bin/python -m mautrix_telegram -g \
-      -c /opt/mautrix-telegram/config.yaml \
-      -r /etc/matrix-synapse/mautrix-telegram-registration.yaml
-  become: true
-
-- name: "Adjust permission of appservice registration file"
-  ansible.builtin.file:
-    path: /etc/matrix-synapse/mautrix-telegram-registration.yaml
-    owner: matrix-synapse
-    group: matrix-synapse
-    mode: "0600"
-  become: true
-
-- name: Find registration.yaml files in /etc/matrix-synapse
-  ansible.builtin.find:
-    paths: /etc/matrix-synapse
-    patterns: '*registration.yaml'
-  register: existing_registrations
-
-- name: "Create registrations.yaml in synapse conf.d directory"
-  ansible.builtin.template:
-    src: templates/registrations.yaml.j2
-    dest: /etc/matrix-synapse/conf.d/registrations.yaml
-    owner: matrix-synapse
-    group: matrix-synapse
-    mode: "0644"
-  become: true
-  notify: "Restart synapse"
-
-# before we can start mautrix-telegram, 
-# we need to apply the synapse configuration
-- meta: flush_handlers
+- name: "Create registration.yaml"
+  ansible.builtin.include_tasks: create-mautrix-registration.yaml
+  vars:
+    bridge: "mautrix-telegram"
+    exec: "/opt/mautrix-telegram/venv/bin/python -m mautrix_telegram"
 
 - name: "Create service file"
   ansible.builtin.template:
@@ -131,3 +95,11 @@
     state: started
     enabled: true
   become: true
+
+# TODO failed to start service:
+# Nov 06 20:50:39 prod (python)[108729]:
+#   mautrix-telegram.service:
+#   Failed to determine user  credentials: No such process
+# Nov 06 20:50:39 prod (python)[108729]: 
+#   mautrix-telegram.service: Failed at step USER spawning 
+#   /opt/mautrix-telegram/venv/bin/python: No such process

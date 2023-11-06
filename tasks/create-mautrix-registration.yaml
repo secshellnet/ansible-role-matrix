@@ -1,0 +1,42 @@
+---
+- name: "Check if registration.yaml already exists"
+  ansible.builtin.stat:
+    path: /etc/matrix-synapse/{{ bridge }}-registration.yaml
+  register: appservice_registration_stat
+
+- name: "Create appservice registration"
+  when:
+    - not appservice_registration_stat.stat.exists
+  ansible.builtin.command: |
+    {{ exec }} -g \
+      -c /opt/{{ bridge }}/config.yaml \
+      -r /etc/matrix-synapse/{{ bridge }}-registration.yaml
+  become: true
+
+- name: "Adjust permission of appservice registration file"
+  ansible.builtin.file:
+    path: /etc/matrix-synapse/{{ bridge }}-registration.yaml
+    owner: matrix-synapse
+    group: matrix-synapse
+    mode: "0600"
+  become: true
+
+- name: Find registration.yaml files in /etc/matrix-synapse
+  ansible.builtin.find:
+    paths: /etc/matrix-synapse
+    patterns: '*registration.yaml'
+  register: existing_registrations
+
+- name: "Create registrations.yaml in synapse conf.d directory"
+  ansible.builtin.template:
+    src: templates/registrations.yaml.j2
+    dest: /etc/matrix-synapse/conf.d/registrations.yaml
+    owner: matrix-synapse
+    group: matrix-synapse
+    mode: "0644"
+  become: true
+  notify: "Restart synapse"
+
+# before we can start the bridge, 
+# we need to apply the synapse configuration
+- meta: flush_handlers

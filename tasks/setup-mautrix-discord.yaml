@@ -64,47 +64,11 @@
     mode: "0600"  # contains passwords
   become: true
 
-- name: "Check if mautrix-discord-registration.yaml already exists"
-  ansible.builtin.stat:
-    path: /etc/matrix-synapse/mautrix-discord-registration.yaml
-  register: appservice_registration_stat
-
-- name: "Create appservice registration"
-  when:
-    - not appservice_registration_stat.stat.exists
-  ansible.builtin.command: |
-    /opt/mautrix-discord/mautrix-discord-amd64 -g \
-      -c /opt/mautrix-discord/config.yaml \
-      -r /etc/matrix-synapse/mautrix-discord-registration.yaml
-  become: true
-
-- name: "Adjust permission of appservice registration file"
-  ansible.builtin.file:
-    path: /etc/matrix-synapse/mautrix-discord-registration.yaml
-    owner: matrix-synapse
-    group: matrix-synapse
-    mode: "0600"
-  become: true
-
-- name: Find registration.yaml files in /etc/matrix-synapse
-  ansible.builtin.find:
-    paths: /etc/matrix-synapse
-    patterns: '*registration.yaml'
-  register: existing_registrations
-
-- name: "Create registrations.yaml in synapse conf.d directory"
-  ansible.builtin.template:
-    src: templates/registrations.yaml.j2
-    dest: /etc/matrix-synapse/conf.d/registrations.yaml
-    owner: matrix-synapse
-    group: matrix-synapse
-    mode: "0644"
-  become: true
-  notify: "Restart synapse"
-
-# before we can start mautrix-discord, 
-# we need to apply the synapse configuration
-- meta: flush_handlers
+- name: "Create registration.yaml"
+  ansible.builtin.include_tasks: create-mautrix-registration.yaml
+  vars:
+    bridge: "mautrix-whatsapp"
+    exec: "/opt/mautrix-discord/mautrix-discord-amd64"
 
 - name: "Create service file"
   ansible.builtin.template:
