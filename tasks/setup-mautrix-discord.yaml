@@ -1,1 +1,117 @@
 ---
+- name: Create system user mautrix-discord
+  ansible.builtin.user:
+    name: mautrix-discord
+    state: present
+    system: yes
+    home: /opt/mautrix-discord
+  become: true
+
+- name: Download mautrix-discord binary
+  ansible.builtin.get_url:
+    url: "https://github.com/mautrix/discord/releases/latest/download/mautrix-discord-amd64"
+    dest: "/opt/mautrix-discord/mautrix-discord-amd64"
+    owner: mautrix-discord
+    group: mautrix-discord
+    mode: "0755"
+  become: true
+
+- name: "Check if config.yaml file already exists"
+  ansible.builtin.stat:
+    path: /opt/mautrix-discord/config.yaml
+  register: config_stat
+
+- name: "Create config file"
+  when:
+    - not config_stat.stat.exists
+  ansible.builtin.get_url:
+    url: https://github.com/mautrix/discord/raw/main/example-config.yaml
+    dest: /opt/mautrix-discord/config.yaml
+    owner: mautrix-discord
+    group: mautrix-discord
+    mode: "0600"  # contains passwords
+  become: true
+
+- name: "Ensure yq is available"
+  ansible.builtin.package:
+    name: yq
+    state: present
+  become: true
+
+- name: "Set bridge permission dict as fact for next task"
+  ansible.builtin.set_fact:
+    bridge_permission: "{{ { '*': 'relay', '@' + matrix_user + ':' + matrix_domain: 'admin' } }}"
+
+- name: "Adjust config.yaml"
+  ansible.builtin.include_tasks: adjust-mautrix-config.yaml
+  vars:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+    bridge: mautrix-discord
+  with_dict:
+    - "homeserver.address": "https://{{ matrix_domain }}"
+    - "homeserver.domain": "{{ matrix_domain }}"
+    - "appservice.database.uri": "postgres://{{ matrix_discord_postgresql_username }}:{{ matrix_discord_postgresql_password }}@{{ matrix_postgresql_hostname }}/{{ matrix_discord_postgresql_database }}?sslmode=disable"
+    - "appservice.bot.username": "dcbot"
+    - "appservice.hostname": "127.0.0.1"
+    - "bridge.permissions": "{{ bridge_permission }}"
+
+- name: "Check if mautrix-discord-registration.yaml already exists"
+  ansible.builtin.stat:
+    path: /etc/matrix-synapse/mautrix-discord-registration.yaml
+  register: appservice_registration_stat
+
+- name: "Create appservice registration"
+  when:
+    - not appservice_registration_stat.stat.exists
+  ansible.builtin.command: |
+    /opt/mautrix-discord/mautrix-discord-amd64 -g \
+      -c /opt/mautrix-discord/config.yaml \
+      -r /etc/matrix-synapse/mautrix-discord-registration.yaml
+  become: true
+
+- name: "Adjust permission of appservice registration file"
+  ansible.builtin.file:
+    path: /etc/matrix-synapse/mautrix-discord-registration.yaml
+    owner: matrix-synapse
+    group: matrix-synapse
+    mode: "0600"
+  become: true
+
+- name: Find registration.yaml files in /etc/matrix-synapse
+  ansible.builtin.find:
+    paths: /etc/matrix-synapse
+    patterns: '*registration.yaml'
+  register: existing_registrations
+
+- name: "Create registrations.yaml in synapse conf.d directory"
+  ansible.builtin.template:
+    src: templates/registrations.yaml.j2
+    dest: /etc/matrix-synapse/conf.d/registrations.yaml
+    owner: mautrix-discord
+    group: mautrix-discord
+    mode: "0644"
+  become: true
+  notify: "Restart synapse"
+
+# before we can start mautrix-discord, 
+# we need to apply the synapse configuration
+- meta: flush_handlers
+
+- name: "Create service file"
+  ansible.builtin.template:
+    src: templates/mautrix.service.j2
+    dest: /etc/systemd/system/{{ bridge }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  vars:
+    bridge: mautrix-discord
+  become: true
+
+- name: "Enable and start mautrix-discord"
+  ansible.builtin.service:
+    name: mautrix-discord
+    state: started
+    enabled: true
+  become: true
