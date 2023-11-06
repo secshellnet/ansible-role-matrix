@@ -1,4 +1,8 @@
 ---
+# There is a go version of the signal bridge, which is currently in development:
+# https://docs.mau.fi/bridges/go/setup.html?bridge=signalgo
+# https://docs.mau.fi/bridges/go/signal/index.html
+
 - name: Create system user mautrix-signal
   ansible.builtin.user:
     name: mautrix-signal
@@ -7,5 +11,4 @@
     home: /opt/mautrix-signal
   become: true
 
-# TODO think about how to get binary files (not in releases...)
-# -> new signal bridge ? go?
+# follow these instructions: https://docs.mau.fi/bridges/python/signal/index.html

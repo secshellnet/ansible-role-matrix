@@ -15,9 +15,9 @@
 - name: "Install mautrix-telegram"
   ansible.builtin.pip:
     name: mautrix-telegram[all]
-    virtualenv_python: /opt/mautrix-telegram/venv
-  become: true
-  become_user: "mautrix-telegram"
+    virtualenv: /opt/mautrix-telegram/venv
+    virtualenv_command: python3 -m venv
+  become: true  # required to create venv, python environment is managed system-wide
 
 - name: "Check if config.yaml file already exists"
   ansible.builtin.stat:
