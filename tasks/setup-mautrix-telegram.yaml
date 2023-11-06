@@ -57,8 +57,8 @@
   with_dict:
     - "homeserver.address": "https://{{ matrix_domain }}"
     - "homeserver.domain": "{{ matrix_domain }}"
-    - "appservice.database.uri": "postgres://{{ matrix_telegram_postgresql_username }}:{{ matrix_telegram_postgresql_password }}@{{ matrix_postgresql_hostname }}/{{ matrix_telegram_postgresql_database }}?sslmode=disable"
-    - "appservice.bot.username": "tgbot"
+    - "appservice.database": "postgres://{{ matrix_telegram_postgresql_username }}:{{ matrix_telegram_postgresql_password }}@{{ matrix_postgresql_hostname }}/{{ matrix_telegram_postgresql_database }}?sslmode=disable"
+    - "appservice.bot_username": "tgbot"
     - "appservice.hostname": "127.0.0.1"
     - "bridge.permissions": "{{ bridge_permission }}"
     - "telegram.api_id": "{{ matrix_telegram_api_id }}"
