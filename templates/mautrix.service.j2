@@ -1,0 +1,35 @@
+[Unit]
+Description={{ bridge }} bridge
+
+[Service]
+Type=exec
+User={{ bridge }}
+WorkingDirectory=/opt/{{ bridge }}
+ExecStart=/opt/{{ bridge }}/{{ bridge }}-amd64
+Restart=on-failure
+RestartSec=30s
+
+# Optional hardening to improve security
+ReadWritePaths=/opt/{{ bridge }}
+NoNewPrivileges=yes
+MemoryDenyWriteExecute=true
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+ProtectKernelLogs=true
+ProtectKernelTunables=true
+ProtectHostname=true
+ProtectKernelModules=true
+PrivateUsers=true
+ProtectClock=true
+SystemCallArchitectures=native
+SystemCallErrorNumber=EPERM
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

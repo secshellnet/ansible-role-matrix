@@ -1,0 +1,12 @@
+---
+matrix_domain:
+matrix_user:
+matrix_postgresql_hostname: localhost
+
+matrix_synapse_postgresql_username: synapse
+matrix_synapse_postgresql_password:
+matrix_synapse_postgresql_database: synapse
+
+matrix_whatsapp_postgresql_username: mautrix-whatsapp
+matrix_whatsapp_postgresql_password:
+matrix_whatsapp_postgresql_database: mautrix-whatsapp

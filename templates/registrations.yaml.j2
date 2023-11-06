@@ -1,0 +1,4 @@
+app_service_config_files:
+{% for file in existing_registrations.files %}
+  - {{ file.path }}
+{% endfor %}

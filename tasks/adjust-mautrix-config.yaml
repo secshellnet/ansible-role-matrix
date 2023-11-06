@@ -1,0 +1,22 @@
+---
+- name: "Get current config value for .{{ key }}"
+  ansible.builtin.command: >-
+    yq -r '.{{ key }}' /opt/{{ bridge }}/config.yaml
+  register: current_value
+  become: true
+  changed_when: false
+
+# the to_json filter needs to be used for mappings/dicts 
+# to ensure double quotes are created, by default single quotes
+# will be used.
+- name: "Adjust config value for .{{ key }}"
+  when:
+    # mappings need to be parsed with from_jsons to compare them with the ansible dicts
+    - "(value is mapping and current_value.stdout|from_json != value) or (value is string and current_value.stdout != value)"
+  ansible.builtin.command: >-
+      yq -yi '.{{ key }} =
+      {% if value is string %}"{{ value }}"
+      {% else %}{{ value|to_json }}
+      {% endif %}' /opt/{{ bridge }}/config.yaml
+  become: true
+  become_user: "{{ bridge }}"

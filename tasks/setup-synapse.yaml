@@ -1,0 +1,77 @@
+---
+- name: "Download Matrix.org repository key"
+  ansible.builtin.get_url:
+    url: "https://packages.matrix.org/debian/matrix-org-archive-keyring.gpg"
+    dest: "/usr/share/keyrings/matrix-org-archive-keyring.gpg"
+  become: true
+
+- name: "Add Matrix.org repository"
+  lineinfile:
+    path: /etc/apt/sources.list.d/matrix-org.list
+    line: "deb [signed-by=/usr/share/keyrings/matrix-org-archive-keyring.gpg] https://packages.matrix.org/debian/ {{ ansible_lsb.codename }} main"
+    create: yes
+  become: true
+
+- name: "Update package cache"
+  ansible.builtin.apt:
+    update_cache: yes
+  become: true
+
+- name: "Install Matrix Synapse server package"
+  ansible.builtin.package:
+    name: matrix-synapse-py3
+    state: present
+  become: true
+
+- name: "Set correct server_name in homeserver.yaml"
+  ansible.builtin.lineinfile:
+    path: /etc/matrix-synapse/conf.d/server_name.yaml
+    regexp: '^server_name.*'
+    line: 'server_name: {{ matrix_domain }}'
+  become: true
+  notify: "Restart synapse"
+
+- name: "Set postgres configuration in homeserver.yaml"
+  ansible.builtin.template:
+    src: templates/database.yaml.j2
+    dest: /etc/matrix-synapse/conf.d/database.yaml
+    owner: matrix-synapse
+    group: matrix-synapse
+    mode: "0600"  # contains database password
+  when:
+    - "matrix_postgresql_hostname is defined"
+    - "matrix_postgresql_hostname is not none"
+    - "matrix_synapse_postgresql_username is defined"
+    - "matrix_synapse_postgresql_username is not none"
+    - "matrix_synapse_postgresql_password is defined"
+    - "matrix_synapse_postgresql_password is not none"
+    - "matrix_synapse_postgresql_database is defined"
+    - "matrix_synapse_postgresql_database is not none"
+  become: true
+  notify: "Restart synapse"
+
+- name: "Check if secrets.yaml already exists"
+  ansible.builtin.stat:
+    path: /etc/matrix-synapse/conf.d/secrets.yaml
+  register: secrets_stat
+
+- name: "Set secrets in homeserver.yaml"
+  when: 
+    - not secrets_stat.stat.exists
+  ansible.builtin.template:
+    src: templates/secrets.yaml.j2
+    dest: /etc/matrix-synapse/conf.d/secrets.yaml
+    owner: matrix-synapse
+    group: matrix-synapse
+    mode: "0600"
+  become: true
+  notify: "Restart synapse"
+
+- name: "Enable and start synapse"
+  ansible.builtin.service:
+    name: matrix-synapse
+    state: started
+    enabled: true
+  become: true
+
+# https://matrix-org.github.io/synapse/latest/setup/installation.html#setting-up-synapse

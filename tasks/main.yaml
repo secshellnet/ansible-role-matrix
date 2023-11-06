@@ -1,0 +1,22 @@
+---
+- name: "Setup synapse"
+  when:
+    - "matrix_domain is defined"
+    - "matrix_domain is not none"
+    - "matrix_user is defined"
+    - "matrix_user is not none"
+  block:
+    - name: "Setup synapse"
+      ansible.builtin.include_tasks: setup-synapse.yaml
+
+    - name: "Setup mautrix-whatsapp"
+      ansible.builtin.include_tasks: setup-mautrix-whatsapp.yaml
+
+    - name: "Setup mautrix-telegram"
+      ansible.builtin.include_tasks: setup-mautrix-telegram.yaml
+
+    - name: "Setup mautrix-signal"
+      ansible.builtin.include_tasks: setup-mautrix-signal.yaml
+
+    - name: "Setup mautrix-discord"
+      ansible.builtin.include_tasks: setup-mautrix-discord.yaml

@@ -1,0 +1,13 @@
+# This file has been generated my ansible
+
+database:
+  name: psycopg2
+  args:
+    user: {{ matrix_synapse_postgresql_username }}
+    password: {{ matrix_synapse_postgresql_password }}
+    database: {{ matrix_synapse_postgresql_database }}
+    host: {{ matrix_postgresql_hostname }}
+    cp_min: 5
+    cp_max: 10
+
+suppress_key_server_warning: true
