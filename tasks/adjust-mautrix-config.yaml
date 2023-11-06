@@ -4,6 +4,7 @@
     yq -r '.{{ key }}' /opt/{{ bridge }}/config.yaml
   register: current_value
   become: true
+  become_user: "{{ bridge }}"
   changed_when: false
 
 # the to_json filter needs to be used for mappings/dicts 
