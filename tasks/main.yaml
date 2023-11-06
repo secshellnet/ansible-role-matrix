@@ -10,13 +10,41 @@
       ansible.builtin.include_tasks: setup-synapse.yaml
 
     - name: "Setup mautrix-whatsapp"
+      when:
+        - "matrix_whatsapp_postgresql_username is defined"
+        - "matrix_whatsapp_postgresql_password is defined"
+        - "matrix_whatsapp_postgresql_database is defined"
+        - "matrix_whatsapp_postgresql_username is not none"
+        - "matrix_whatsapp_postgresql_password is not none"
+        - "matrix_whatsapp_postgresql_database is not none"
       ansible.builtin.include_tasks: setup-mautrix-whatsapp.yaml
 
     - name: "Setup mautrix-telegram"
+      when:
+        - "matrix_telegram_postgresql_username is defined"
+        - "matrix_telegram_postgresql_password is defined"
+        - "matrix_telegram_postgresql_database is defined"
+        - "matrix_telegram_postgresql_username is not none"
+        - "matrix_telegram_postgresql_password is not none"
+        - "matrix_telegram_postgresql_database is not none"
       ansible.builtin.include_tasks: setup-mautrix-telegram.yaml
 
     - name: "Setup mautrix-signal"
+      when:
+        - "matrix_signal_postgresql_username is defined"
+        - "matrix_signal_postgresql_password is defined"
+        - "matrix_signal_postgresql_database is defined"
+        - "matrix_signal_postgresql_username is not none"
+        - "matrix_signal_postgresql_password is not none"
+        - "matrix_signal_postgresql_database is not none"
       ansible.builtin.include_tasks: setup-mautrix-signal.yaml
 
     - name: "Setup mautrix-discord"
+      when:
+        - "matrix_discord_postgresql_username is defined"
+        - "matrix_discord_postgresql_password is defined"
+        - "matrix_discord_postgresql_database is defined"
+        - "matrix_discord_postgresql_username is not none"
+        - "matrix_discord_postgresql_password is not none"
+        - "matrix_discord_postgresql_database is not none"
       ansible.builtin.include_tasks: setup-mautrix-discord.yaml

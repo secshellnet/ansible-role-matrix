@@ -56,6 +56,14 @@
     - "appservice.hostname": "127.0.0.1"
     - "bridge.permissions": "{{ bridge_permission }}"
 
+- name: "Adjust config file permissions"
+  ansible.builtin.file:
+    path: /opt/mautrix-discord/config.yaml
+    owner: mautrix-discord
+    group: mautrix-discord
+    mode: "0600"  # contains passwords
+  become: true
+
 - name: "Check if mautrix-discord-registration.yaml already exists"
   ansible.builtin.stat:
     path: /etc/matrix-synapse/mautrix-discord-registration.yaml
@@ -88,8 +96,8 @@
   ansible.builtin.template:
     src: templates/registrations.yaml.j2
     dest: /etc/matrix-synapse/conf.d/registrations.yaml
-    owner: mautrix-discord
-    group: mautrix-discord
+    owner: matrix-synapse
+    group: matrix-synapse
     mode: "0644"
   become: true
   notify: "Restart synapse"
