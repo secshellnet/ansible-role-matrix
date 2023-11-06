@@ -81,7 +81,7 @@
   when:
     - not appservice_registration_stat.stat.exists
   ansible.builtin.command: |
-    python -m mautrix_telegram -g \
+    /opt/mautrix-telegram/venv/bin/python -m mautrix_telegram -g \
       -c /opt/mautrix-telegram/config.yaml \
       -r /etc/matrix-synapse/mautrix-telegram-registration.yaml
   become: true

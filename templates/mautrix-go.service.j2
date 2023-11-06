@@ -5,7 +5,7 @@ Description={{ bridge }} bridge
 Type=exec
 User={{ bridge }}
 WorkingDirectory=/opt/{{ bridge }}
-ExecStart=python3 -m {{ bridge }}
+ExecStart=/opt/{{ bridge }}/{{ bridge }}-amd64
 Restart=on-failure
 RestartSec=30s
 
