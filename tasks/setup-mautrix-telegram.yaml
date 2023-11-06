@@ -81,7 +81,7 @@
   when:
     - not appservice_registration_stat.stat.exists
   ansible.builtin.command: |
-    /opt/mautrix-telegram/mautrix-telegram-amd64 -g \
+    python -m mautrix_telegram -g \
       -c /opt/mautrix-telegram/config.yaml \
       -r /etc/matrix-synapse/mautrix-telegram-registration.yaml
   become: true
@@ -116,13 +116,13 @@
 
 - name: "Create service file"
   ansible.builtin.template:
-    src: templates/mautrix.service.j2
-    dest: /etc/systemd/system/{{ bridge }}.service
+    src: templates/mautrix-py.service.j2
+    dest: /etc/systemd/system/mautrix-telegram.service
     owner: root
     group: root
     mode: "0644"
   vars:
-    bridge: mautrix-telegram
+    bridge: mautrix_telegram
   become: true
 
 - name: "Enable and start mautrix-telegram"
