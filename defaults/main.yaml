@@ -22,3 +22,6 @@ matrix_telegram_postgresql_database: mautrix-telegram
 matrix_discord_postgresql_username: mautrix-discord
 matrix_discord_postgresql_password:
 matrix_discord_postgresql_database: mautrix-discord
+
+matrix_telegram_api_id:
+matrix_telegram_api_hash:

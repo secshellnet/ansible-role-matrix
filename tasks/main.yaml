@@ -24,9 +24,13 @@
         - "matrix_telegram_postgresql_username is defined"
         - "matrix_telegram_postgresql_password is defined"
         - "matrix_telegram_postgresql_database is defined"
+        - "matrix_telegram_api_id is defined"
+        - "matrix_telegram_api_hash is defined"
         - "matrix_telegram_postgresql_username is not none"
         - "matrix_telegram_postgresql_password is not none"
         - "matrix_telegram_postgresql_database is not none"
+        - "matrix_telegram_api_id is not none"
+        - "matrix_telegram_api_hash is not none"
       ansible.builtin.include_tasks: setup-mautrix-telegram.yaml
 
     - name: "Setup mautrix-signal"

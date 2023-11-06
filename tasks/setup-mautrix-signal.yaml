@@ -1,2 +1,11 @@
 ---
+- name: Create system user mautrix-signal
+  ansible.builtin.user:
+    name: mautrix-signal
+    state: present
+    system: yes
+    home: /opt/mautrix-signal
+  become: true
+
 # TODO think about how to get binary files (not in releases...)
+# -> new signal bridge ? go?

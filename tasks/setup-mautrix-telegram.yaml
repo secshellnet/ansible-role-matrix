@@ -1,2 +1,126 @@
 ---
-# TODO think about how to get binary files (not in releases...)
+- name: Create system user mautrix-telegram
+  ansible.builtin.user:
+    name: mautrix-telegram
+    state: present
+    system: yes
+    home: /opt/mautrix-telegram
+  become: true
+
+- name: "Install mautrix-telegram"
+  ansible.builtin.pip:
+    name: mautrix-telegram[all]
+    virtualenv_python: /opt/mautrix-telegram/venv
+  become: true
+  become_user: "mautrix-telegram"
+
+- name: "Check if config.yaml file already exists"
+  ansible.builtin.stat:
+    path: /opt/mautrix-telegram/config.yaml
+  register: config_stat
+
+- name: "Create config file"
+  when:
+    - not config_stat.stat.exists
+  ansible.builtin.get_url:
+    url: https://github.com/mautrix/telegram/raw/master/mautrix_telegram/example-config.yaml
+    dest: /opt/mautrix-telegram/config.yaml
+    owner: mautrix-telegram
+    group: mautrix-telegram
+    mode: "0600"  # contains passwords
+  become: true
+  become_user: "mautrix-telegram"
+
+- name: "Ensure yq is available"
+  ansible.builtin.package:
+    name: yq
+    state: present
+  become: true
+
+- name: "Set bridge permission dict as fact for next task"
+  ansible.builtin.set_fact:
+    bridge_permission: "{{ { '*': 'relaybot', '@' + matrix_user + ':' + matrix_domain: 'admin' } }}"
+
+- name: "Adjust config.yaml"
+  ansible.builtin.include_tasks: adjust-mautrix-config.yaml
+  vars:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+    bridge: mautrix-telegram
+  with_dict:
+    - "homeserver.address": "https://{{ matrix_domain }}"
+    - "homeserver.domain": "{{ matrix_domain }}"
+    - "appservice.database.uri": "postgres://{{ matrix_telegram_postgresql_username }}:{{ matrix_telegram_postgresql_password }}@{{ matrix_postgresql_hostname }}/{{ matrix_telegram_postgresql_database }}?sslmode=disable"
+    - "appservice.bot.username": "tgbot"
+    - "appservice.hostname": "127.0.0.1"
+    - "bridge.permissions": "{{ bridge_permission }}"
+    - "telegram.api_id": "{{ matrix_telegram_api_id }}"
+    - "telegram.api_hash": "{{ matrix_telegram_api_hash }}"
+
+- name: "Adjust config file permissions"
+  ansible.builtin.file:
+    path: /opt/mautrix-telegram/config.yaml
+    owner: mautrix-telegram
+    group: mautrix-telegram
+    mode: "0600"  # contains passwords
+  become: true
+
+- name: "Check if mautrix-telegram-registration.yaml already exists"
+  ansible.builtin.stat:
+    path: /etc/matrix-synapse/mautrix-telegram-registration.yaml
+  register: appservice_registration_stat
+
+- name: "Create appservice registration"
+  when:
+    - not appservice_registration_stat.stat.exists
+  ansible.builtin.command: |
+    /opt/mautrix-telegram/mautrix-telegram-amd64 -g \
+      -c /opt/mautrix-telegram/config.yaml \
+      -r /etc/matrix-synapse/mautrix-telegram-registration.yaml
+  become: true
+
+- name: "Adjust permission of appservice registration file"
+  ansible.builtin.file:
+    path: /etc/matrix-synapse/mautrix-telegram-registration.yaml
+    owner: matrix-synapse
+    group: matrix-synapse
+    mode: "0600"
+  become: true
+
+- name: Find registration.yaml files in /etc/matrix-synapse
+  ansible.builtin.find:
+    paths: /etc/matrix-synapse
+    patterns: '*registration.yaml'
+  register: existing_registrations
+
+- name: "Create registrations.yaml in synapse conf.d directory"
+  ansible.builtin.template:
+    src: templates/registrations.yaml.j2
+    dest: /etc/matrix-synapse/conf.d/registrations.yaml
+    owner: matrix-synapse
+    group: matrix-synapse
+    mode: "0644"
+  become: true
+  notify: "Restart synapse"
+
+# before we can start mautrix-telegram, 
+# we need to apply the synapse configuration
+- meta: flush_handlers
+
+- name: "Create service file"
+  ansible.builtin.template:
+    src: templates/mautrix.service.j2
+    dest: /etc/systemd/system/{{ bridge }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  vars:
+    bridge: mautrix-telegram
+  become: true
+
+- name: "Enable and start mautrix-telegram"
+  ansible.builtin.service:
+    name: mautrix-telegram
+    state: started
+    enabled: true
+  become: true
