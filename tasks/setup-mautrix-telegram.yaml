@@ -7,9 +7,11 @@
     home: /opt/mautrix-telegram
   become: true
 
-- name: "Ensure pip is installed"
+- name: "Ensure pip and venv is installed"
   ansible.builtin.package:
-    name: python3-pip
+    name: 
+      - python3-pip
+      - python3.11-venv
   become: true
 
 - name: "Install mautrix-telegram"
