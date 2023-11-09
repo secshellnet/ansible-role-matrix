@@ -87,6 +87,7 @@
     mode: "0644"
   vars:
     bridge: mautrix_telegram
+    bridgeDash: mautrix-telegram
   become: true
 
 - name: "mautrix-telegram: Enable and start service"

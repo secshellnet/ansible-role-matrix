@@ -89,6 +89,7 @@
     mode: "0644"
   vars:
     bridge: mautrix_signal
+    bridgeDash: mautrix-signal
   become: true
 
 - name: "mautrix-signal: Enable and start service"
