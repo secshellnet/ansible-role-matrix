@@ -3,7 +3,7 @@
 # https://docs.mau.fi/bridges/go/setup.html?bridge=signalgo
 # https://docs.mau.fi/bridges/go/signal/index.html
 
-- name: Create system user mautrix-signal
+- name: "mautrix-signal: Create system user"
   ansible.builtin.user:
     name: mautrix-signal
     state: present
@@ -11,21 +11,21 @@
     home: /opt/mautrix-signal
   become: true
 
-- name: "Ensure pip and venv is installed"
+- name: "mautrix-signal: Ensure pip and venv is installed"
   ansible.builtin.package:
     name: 
       - python3-pip
       - python3.11-venv
   become: true
 
-- name: "Install mautrix-signal"
+- name: "mautrix-signal: Install mautrix-signal"
   ansible.builtin.pip:
     name: mautrix-signal[all]
     virtualenv: /opt/mautrix-signal/venv
     virtualenv_command: python3 -m venv
   become: true  # required to create venv, python environment is managed system-wide
 
-- name: "Check if config.yaml file already exists"
+- name: "mautrix-signal: Check if config.yaml file already exists"
   ansible.builtin.stat:
     path: /opt/mautrix-signal/config.yaml
   register: config_stat
@@ -42,22 +42,22 @@
   become: true
   become_user: "mautrix-signal"
 
-- name: "Ensure yq is available"
+- name: "mautrix-signal: Ensure yq is available"
   ansible.builtin.package:
     name: yq
     state: present
   become: true
 
-- name: "Set bridge permission dict as fact for next task"
+- name: "mautrix-signal: Set bridge permission dict as fact for next task"
   ansible.builtin.set_fact:
     bridge_permission: "{{ { '*': 'relaybot', '@' + matrix_user + ':' + matrix_domain: 'admin' } }}"
 
-- name: "Adjust config.yaml"
+- name: "mautrix-signal: Adjust config.yaml"
   ansible.builtin.include_tasks: adjust-mautrix-config.yaml
   vars:
     key: "{{ item.key }}"
     value: "{{ item.value }}"
-    bridge: mautrix-telegram
+    bridge: mautrix-signal
   with_dict:
     - "homeserver.address": "https://{{ matrix_domain }}"
     - "homeserver.domain": "{{ matrix_domain }}"
@@ -66,7 +66,7 @@
     - "appservice.hostname": "127.0.0.1"
     - "bridge.permissions": "{{ bridge_permission }}"
 
-- name: "Adjust config file permissions"
+- name: "mautrix-signal: Adjust config file permissions"
   ansible.builtin.file:
     path: /opt/mautrix-signal/config.yaml
     owner: mautrix-signal
@@ -74,13 +74,13 @@
     mode: "0600"  # contains passwords
   become: true
 
-- name: "Create registration.yaml"
+- name: "mautrix-signal: Create registration.yaml"
   ansible.builtin.include_tasks: create-mautrix-registration.yaml
   vars:
     bridge: "mautrix-signal"
     exec: "/opt/mautrix-signal/venv/bin/python -m mautrix_signal"
 
-- name: "Create service file"
+- name: "mautrix-signal: Create service file"
   ansible.builtin.template:
     src: templates/mautrix-py.service.j2
     dest: /etc/systemd/system/mautrix-signal.service
@@ -91,7 +91,7 @@
     bridge: mautrix_signal
   become: true
 
-- name: "Enable and start mautrix-signal"
+- name: "mautrix-signal: Enable and start service"
   ansible.builtin.service:
     name: mautrix-signal
     state: started

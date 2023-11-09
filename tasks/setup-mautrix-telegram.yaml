@@ -1,5 +1,5 @@
 ---
-- name: Create system user mautrix-telegram
+- name: "mautrix-telegram: Create system user"
   ansible.builtin.user:
     name: mautrix-telegram
     state: present
@@ -7,21 +7,21 @@
     home: /opt/mautrix-telegram
   become: true
 
-- name: "Ensure pip and venv is installed"
+- name: "mautrix-telegram: Ensure pip and venv is installed"
   ansible.builtin.package:
     name: 
       - python3-pip
       - python3.11-venv
   become: true
 
-- name: "Install mautrix-telegram"
+- name: "mautrix-telegram: Install mautrix-telegram"
   ansible.builtin.pip:
     name: mautrix-telegram[all]
     virtualenv: /opt/mautrix-telegram/venv
     virtualenv_command: python3 -m venv
   become: true  # required to create venv, python environment is managed system-wide
 
-- name: "Check if config.yaml file already exists"
+- name: "mautrix-telegram: Check if config.yaml file already exists"
   ansible.builtin.stat:
     path: /opt/mautrix-telegram/config.yaml
   register: config_stat
@@ -38,17 +38,17 @@
   become: true
   become_user: "mautrix-telegram"
 
-- name: "Ensure yq is available"
+- name: "mautrix-telegram: Ensure yq is available"
   ansible.builtin.package:
     name: yq
     state: present
   become: true
 
-- name: "Set bridge permission dict as fact for next task"
+- name: "mautrix-telegram: Set bridge permission dict as fact for next task"
   ansible.builtin.set_fact:
     bridge_permission: "{{ { '*': 'relaybot', '@' + matrix_user + ':' + matrix_domain: 'admin' } }}"
 
-- name: "Adjust config.yaml"
+- name: "mautrix-telegram: Adjust config.yaml"
   ansible.builtin.include_tasks: adjust-mautrix-config.yaml
   vars:
     key: "{{ item.key }}"
@@ -64,7 +64,7 @@
     - "telegram.api_id": "{{ matrix_telegram_api_id }}"
     - "telegram.api_hash": "{{ matrix_telegram_api_hash }}"
 
-- name: "Adjust config file permissions"
+- name: "mautrix-telegram: Adjust config file permissions"
   ansible.builtin.file:
     path: /opt/mautrix-telegram/config.yaml
     owner: mautrix-telegram
@@ -72,13 +72,13 @@
     mode: "0600"  # contains passwords
   become: true
 
-- name: "Create registration.yaml"
+- name: "mautrix-telegram: Create registration.yaml"
   ansible.builtin.include_tasks: create-mautrix-registration.yaml
   vars:
     bridge: "mautrix-telegram"
     exec: "/opt/mautrix-telegram/venv/bin/python -m mautrix_telegram"
 
-- name: "Create service file"
+- name: "mautrix-telegram: Create service file"
   ansible.builtin.template:
     src: templates/mautrix-py.service.j2
     dest: /etc/systemd/system/mautrix-telegram.service
@@ -89,7 +89,7 @@
     bridge: mautrix_telegram
   become: true
 
-- name: "Enable and start mautrix-telegram"
+- name: "mautrix-telegram: Enable and start service"
   ansible.builtin.service:
     name: mautrix-telegram
     state: started

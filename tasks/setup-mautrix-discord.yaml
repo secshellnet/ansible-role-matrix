@@ -1,5 +1,5 @@
 ---
-- name: Create system user mautrix-discord
+- name: "mautrix-discord: Create system user"
   ansible.builtin.user:
     name: mautrix-discord
     state: present
@@ -7,7 +7,7 @@
     home: /opt/mautrix-discord
   become: true
 
-- name: Download mautrix-discord binary
+- name: "mautrix-discord: Download binary"
   ansible.builtin.get_url:
     url: "https://github.com/mautrix/discord/releases/latest/download/mautrix-discord-amd64"
     dest: "/opt/mautrix-discord/mautrix-discord-amd64"
@@ -16,12 +16,12 @@
     mode: "0755"
   become: true
 
-- name: "Check if config.yaml file already exists"
+- name: "mautrix-discord: Check if config.yaml file already exists"
   ansible.builtin.stat:
     path: /opt/mautrix-discord/config.yaml
   register: config_stat
 
-- name: "Create config file"
+- name: "mautrix-discord: Create config file"
   when:
     - not config_stat.stat.exists
   ansible.builtin.get_url:
@@ -32,17 +32,17 @@
     mode: "0600"  # contains passwords
   become: true
 
-- name: "Ensure yq is available"
+- name: "mautrix-discord: Ensure yq is available"
   ansible.builtin.package:
     name: yq
     state: present
   become: true
 
-- name: "Set bridge permission dict as fact for next task"
+- name: "mautrix-discord: Set bridge permission dict as fact for next task"
   ansible.builtin.set_fact:
     bridge_permission: "{{ { '*': 'relay', '@' + matrix_user + ':' + matrix_domain: 'admin' } }}"
 
-- name: "Adjust config.yaml"
+- name: "mautrix-discord: Adjust config.yaml"
   ansible.builtin.include_tasks: adjust-mautrix-config.yaml
   vars:
     key: "{{ item.key }}"
@@ -56,7 +56,7 @@
     - "appservice.hostname": "127.0.0.1"
     - "bridge.permissions": "{{ bridge_permission }}"
 
-- name: "Adjust config file permissions"
+- name: "mautrix-discord: Adjust config file permissions"
   ansible.builtin.file:
     path: /opt/mautrix-discord/config.yaml
     owner: mautrix-discord
@@ -64,13 +64,13 @@
     mode: "0600"  # contains passwords
   become: true
 
-- name: "Create registration.yaml"
+- name: "mautrix-discord: Create registration.yaml"
   ansible.builtin.include_tasks: create-mautrix-registration.yaml
   vars:
     bridge: "mautrix-whatsapp"
     exec: "/opt/mautrix-discord/mautrix-discord-amd64"
 
-- name: "Create service file"
+- name: "mautrix-discord: Create service file"
   ansible.builtin.template:
     src: templates/mautrix-go.service.j2
     dest: /etc/systemd/system/{{ bridge }}.service
@@ -81,7 +81,7 @@
     bridge: mautrix-discord
   become: true
 
-- name: "Enable and start mautrix-discord"
+- name: "mautrix-discord: Enable and start service"
   ansible.builtin.service:
     name: mautrix-discord
     state: started
