@@ -21,6 +21,15 @@
     mode: "0600"
   become: true
 
+# creating the registration changes the owner/group of the config file
+- name: "Adjust bridge config file permissions"
+  ansible.builtin.file:
+    path: "/opt/{{ bridge }}/config.yaml"
+    owner: "{{ bridge }}"
+    group: "{{ bridge }}"
+    mode: "0600"  # contains passwords
+  become: true
+
 - name: Find registration.yaml files in /etc/matrix-synapse
   ansible.builtin.find:
     paths: /etc/matrix-synapse

@@ -56,14 +56,6 @@
     - "appservice.hostname": "127.0.0.1"
     - "bridge.permissions": "{{ bridge_permission }}"
 
-- name: "mautrix-whatsapp: Adjust config file permissions"
-  ansible.builtin.file:
-    path: /opt/mautrix-whatsapp/config.yaml
-    owner: mautrix-whatsapp
-    group: mautrix-whatsapp
-    mode: "0600"  # contains passwords
-  become: true
-
 - name: "mautrix-whatsapp: Create registration.yaml"
   ansible.builtin.include_tasks: create-mautrix-registration.yaml
   vars:
