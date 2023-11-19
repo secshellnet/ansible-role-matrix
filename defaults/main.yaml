@@ -1,4 +1,5 @@
 ---
+matrix_address: "https://{{ matrix_domain }}"
 matrix_domain:
 matrix_user:
 matrix_postgresql_hostname: localhost

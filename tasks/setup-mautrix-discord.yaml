@@ -49,7 +49,7 @@
     value: "{{ item.value }}"
     bridge: mautrix-discord
   with_dict:
-    - "homeserver.address": "https://{{ matrix_domain }}"
+    - "homeserver.address": "{{ matrix_address }}"
     - "homeserver.domain": "{{ matrix_domain }}"
     - "appservice.database.uri": "postgres://{{ matrix_discord_postgresql_username }}:{{ matrix_discord_postgresql_password }}@{{ matrix_postgresql_hostname }}/{{ matrix_discord_postgresql_database }}?sslmode=disable"
     - "appservice.bot.username": "dcbot"

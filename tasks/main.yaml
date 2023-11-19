@@ -3,6 +3,8 @@
   when:
     - "matrix_domain is defined"
     - "matrix_domain is not none"
+    - "matrix_address is defined"
+    - "matrix_address is not none"
     - "matrix_user is defined"
     - "matrix_user is not none"
   block:

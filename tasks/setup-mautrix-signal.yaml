@@ -59,7 +59,7 @@
     value: "{{ item.value }}"
     bridge: mautrix-signal
   with_dict:
-    - "homeserver.address": "https://{{ matrix_domain }}"
+    - "homeserver.address": "{{ matrix_address }}"
     - "homeserver.domain": "{{ matrix_domain }}"
     - "appservice.database": "postgres://{{ matrix_signal_postgresql_username }}:{{ matrix_signal_postgresql_password }}@{{ matrix_postgresql_hostname }}/{{ matrix_signal_postgresql_database }}?sslmode=disable"
     - "appservice.bot_username": "sigbot"

@@ -55,7 +55,7 @@
     value: "{{ item.value }}"
     bridge: mautrix-telegram
   with_dict:
-    - "homeserver.address": "https://{{ matrix_domain }}"
+    - "homeserver.address": "{{ matrix_address }}"
     - "homeserver.domain": "{{ matrix_domain }}"
     - "appservice.database": "postgres://{{ matrix_telegram_postgresql_username }}:{{ matrix_telegram_postgresql_password }}@{{ matrix_postgresql_hostname }}/{{ matrix_telegram_postgresql_database }}?sslmode=disable"
     - "appservice.bot_username": "tgbot"
