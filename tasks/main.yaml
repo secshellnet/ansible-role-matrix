@@ -13,6 +13,7 @@
 
     - name: "Setup mautrix-whatsapp"
       when:
+        - "matrix_enable_whatsapp"
         - "matrix_whatsapp_postgresql_username is defined"
         - "matrix_whatsapp_postgresql_password is defined"
         - "matrix_whatsapp_postgresql_database is defined"
@@ -23,6 +24,7 @@
 
     #- name: "Setup mautrix-telegram"
     #  when:
+    #    - "matrix_enable_telegram"
     #    - "matrix_telegram_postgresql_username is defined"
     #    - "matrix_telegram_postgresql_password is defined"
     #    - "matrix_telegram_postgresql_database is defined"
@@ -37,6 +39,7 @@
 
     #- name: "Setup mautrix-signal"
     #  when:
+    #    - "matrix_enable_signal"
     #    - "matrix_signal_postgresql_username is defined"
     #    - "matrix_signal_postgresql_password is defined"
     #    - "matrix_signal_postgresql_database is defined"
@@ -47,6 +50,7 @@
 
     #- name: "Setup mautrix-discord"
     #  when:
+    #    - "matrix_enable_discord"
     #    - "matrix_discord_postgresql_username is defined"
     #    - "matrix_discord_postgresql_password is defined"
     #    - "matrix_discord_postgresql_database is defined"

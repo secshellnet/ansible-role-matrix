@@ -8,14 +8,17 @@ matrix_synapse_postgresql_username: synapse
 matrix_synapse_postgresql_password:
 matrix_synapse_postgresql_database: synapse
 
+matrix_enable_whatsapp: false
 matrix_whatsapp_postgresql_username: mautrix-whatsapp
 matrix_whatsapp_postgresql_password:
 matrix_whatsapp_postgresql_database: mautrix-whatsapp
 
+matrix_enable_signal: false
 matrix_signal_postgresql_username: mautrix-signal
 matrix_signal_postgresql_password:
 matrix_signal_postgresql_database: mautrix-signal
 
+matrix_enable_telegram: false
 matrix_telegram_postgresql_username: mautrix-telegram
 matrix_telegram_postgresql_password:
 matrix_telegram_postgresql_database: mautrix-telegram
@@ -23,6 +26,7 @@ matrix_telegram_postgresql_database: mautrix-telegram
 matrix_telegram_api_id:
 matrix_telegram_api_hash:
 
+matrix_enable_discord: false
 matrix_discord_postgresql_username: mautrix-discord
 matrix_discord_postgresql_password:
 matrix_discord_postgresql_database: mautrix-discord
